@@ -12,9 +12,7 @@ import retrofit2.http.Url;
  */
 
 public interface DownloadService {
-
     @Streaming
     @GET
     Call<ResponseBody> downloadWithDynamicUrl(@Url String fileUrl);
-
 }

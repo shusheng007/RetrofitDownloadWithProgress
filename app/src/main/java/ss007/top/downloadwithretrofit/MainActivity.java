@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onProgress(int progress) {
-                        tvProgress.setText(String.format("下载进度为：%s%", progress));
+                        tvProgress.setText(String.format("下载进度为：%s", progress));
                     }
 
                     @Override

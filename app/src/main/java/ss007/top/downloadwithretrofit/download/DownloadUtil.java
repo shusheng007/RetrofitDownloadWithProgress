@@ -36,7 +36,6 @@ public class DownloadUtil {
 
 
     private DownloadUtil() {
-
     }
 
     public void downloadFile(final String baseUrl, final String rUrl, final String filePath, final DownloadListener listener) {

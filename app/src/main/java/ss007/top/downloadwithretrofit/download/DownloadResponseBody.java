@@ -25,10 +25,10 @@ public class DownloadResponseBody extends ResponseBody {
     private BufferedSource bufferedSource;
     private Executor executor;
 
-    public DownloadResponseBody(ResponseBody responseBody,Executor executor, DownloadListener downloadListener) {
+    public DownloadResponseBody(ResponseBody responseBody, Executor executor, DownloadListener downloadListener) {
         this.responseBody = responseBody;
         this.downloadListener = downloadListener;
-        this.executor=executor;
+        this.executor = executor;
     }
 
     @Override
@@ -52,17 +52,18 @@ public class DownloadResponseBody extends ResponseBody {
     private Source source(Source source) {
         return new ForwardingSource(source) {
             long totalBytesRead = 0L;
+
             @Override
             public long read(Buffer sink, long byteCount) throws IOException {
                 final long bytesRead = super.read(sink, byteCount);
                 // read() returns the number of bytes read, or -1 if this source is exhausted.
                 if (null != downloadListener) {
                     totalBytesRead += bytesRead != -1 ? bytesRead : 0;
-                    Logger.t("DownloadUtil").d("已经下载的："+totalBytesRead+"共有："+responseBody.contentLength());
-                    final int progress=(int) (totalBytesRead*100/responseBody.contentLength());
-                    if (executor!=null){
+                    Logger.t("DownloadUtil").d("已经下载的：" + totalBytesRead + "共有：" + responseBody.contentLength());
+                    final int progress = (int) (totalBytesRead * 100 / responseBody.contentLength());
+                    if (executor != null) {
                         executor.execute(() -> downloadListener.onProgress(progress));
-                    }else {
+                    } else {
                         downloadListener.onProgress(progress);
                     }
                 }
