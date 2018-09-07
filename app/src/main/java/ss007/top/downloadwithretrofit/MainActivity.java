@@ -43,13 +43,16 @@ public class MainActivity extends AppCompatActivity {
 
 
         final String desFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/sstx.apk";
-        final String baseUrl = "http://app.shusheng007.top/";
-        final String url = "sstx/system/apk/sstx_8.0.0.apk";
+        final String baseUrl = "http://www.apk.anzhi.com/";
+        final String url = "data4/apk/201809/06/f2a4dbd1b6cc2dca6567f42ae7a91f11_45629100.apk";
 
-        download.setOnClickListener(v -> DownloadUtil.getInstance()
+        download.setOnClickListener(v -> {
+            download.setEnabled(false);
+            DownloadUtil.getInstance()
                 .downloadFile(baseUrl, url, desFilePath, new DownloadListener() {
                     @Override
                     public void onFinish(final File file) {
+                        download.setEnabled(true);
                         tvFileLocation.setText("下载的文件地址为：" + file.getAbsolutePath());
                         installAPK(file, MainActivity.this);
                     }
@@ -61,9 +64,9 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailed(String errMsg) {
-
+                        download.setEnabled(true);
                     }
-                }));
+                });});
 
     }
 
