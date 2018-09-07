@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         final String desFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/sstx.apk";
         final String baseUrl = "http://app.shusheng007.top/";
-        final String url = "sstx/system/apk/sstx_7.9.apk";
+        final String url = "sstx/system/apk/sstx_8.0.0.apk";
 
         download.setOnClickListener(v -> DownloadUtil.getInstance()
                 .downloadFile(baseUrl, url, desFilePath, new DownloadListener() {
