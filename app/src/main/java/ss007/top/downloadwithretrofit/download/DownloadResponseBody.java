@@ -1,12 +1,8 @@
 package ss007.top.downloadwithretrofit.download;
 
-import android.os.Handler;
-import android.os.Looper;
-
-import com.orhanobut.logger.Logger;
+import android.util.Log;
 
 import java.io.IOException;
-import java.util.IllegalFormatCodePointException;
 import java.util.concurrent.Executor;
 
 import okhttp3.MediaType;
@@ -59,7 +55,7 @@ public class DownloadResponseBody extends ResponseBody {
                 // read() returns the number of bytes read, or -1 if this source is exhausted.
                 if (null != downloadListener) {
                     totalBytesRead += bytesRead != -1 ? bytesRead : 0;
-                    Logger.t("DownloadUtil").d("已经下载的：" + totalBytesRead + "共有：" + responseBody.contentLength());
+                    Log.d("DownloadUtil","已经下载的：" + totalBytesRead + "共有：" + responseBody.contentLength());
                     final int progress = (int) (totalBytesRead * 100 / responseBody.contentLength());
                     if (executor != null) {
                         executor.execute(() -> downloadListener.onProgress(progress));
@@ -71,4 +67,6 @@ public class DownloadResponseBody extends ResponseBody {
             }
         };
     }
+
+
 }

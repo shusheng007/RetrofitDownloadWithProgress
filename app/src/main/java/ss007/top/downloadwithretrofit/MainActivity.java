@@ -3,26 +3,19 @@ package ss007.top.downloadwithretrofit;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
+import android.os.Environment;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.orhanobut.logger.LogLevel;
-import com.orhanobut.logger.Logger;
 
 import java.io.File;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 import ss007.top.downloadwithretrofit.download.DownloadListener;
 import ss007.top.downloadwithretrofit.download.DownloadUtil;
 
@@ -33,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Logger.init("SSTX").logLevel(LogLevel.FULL);
         final TextView tvProgress = findViewById(R.id.tv_progess);
         final TextView tvFileLocation = findViewById(R.id.tv_file_location);
         Button download = findViewById(R.id.button);
@@ -46,27 +38,31 @@ public class MainActivity extends AppCompatActivity {
         final String baseUrl = "http://www.apk.anzhi.com/";
         final String url = "data4/apk/201809/06/f2a4dbd1b6cc2dca6567f42ae7a91f11_45629100.apk";
 
+        //如果需要使用自己的OkHttpClient
+        //DownloadUtil.getInstance().initConfig(OkHttpClient.Builder);
+
         download.setOnClickListener(v -> {
             download.setEnabled(false);
             DownloadUtil.getInstance()
-                .downloadFile(baseUrl, url, desFilePath, new DownloadListener() {
-                    @Override
-                    public void onFinish(final File file) {
-                        download.setEnabled(true);
-                        tvFileLocation.setText("下载的文件地址为：" + file.getAbsolutePath());
-                        installAPK(file, MainActivity.this);
-                    }
+                    .downloadFile(baseUrl, url, desFilePath, new DownloadListener() {
+                        @Override
+                        public void onFinish(final File file) {
+                            download.setEnabled(true);
+                            tvFileLocation.setText("下载的文件地址为：" + file.getAbsolutePath());
+                            installAPK(file, MainActivity.this);
+                        }
 
-                    @Override
-                    public void onProgress(int progress) {
-                        tvProgress.setText(String.format("下载进度为：%s", progress));
-                    }
+                        @Override
+                        public void onProgress(int progress) {
+                            tvProgress.setText(String.format("下载进度为：%s", progress));
+                        }
 
-                    @Override
-                    public void onFailed(String errMsg) {
-                        download.setEnabled(true);
-                    }
-                });});
+                        @Override
+                        public void onFailed(String errMsg) {
+                            download.setEnabled(true);
+                        }
+                    });
+        });
 
     }
 
@@ -80,9 +76,7 @@ public class MainActivity extends AppCompatActivity {
         mAct.startActivity(getInstallAppIntent(file, authority, true));
     }
 
-    private Intent getInstallAppIntent(final File file,
-                                       final String authority,
-                                       final boolean isNewTask) {
+    private Intent getInstallAppIntent(final File file, final String authority, final boolean isNewTask) {
         if (file == null) return null;
         Intent intent = new Intent(Intent.ACTION_VIEW);
         Uri data;
