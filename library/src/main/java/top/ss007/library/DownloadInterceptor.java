@@ -1,7 +1,6 @@
-package ss007.top.downloadwithretrofit.download;
+package top.ss007.library;
 
 import java.io.IOException;
-import java.util.concurrent.Executor;
 
 import okhttp3.Interceptor;
 import okhttp3.Response;
@@ -9,11 +8,9 @@ import okhttp3.Response;
 public class DownloadInterceptor implements Interceptor {
 
     private DownloadListener listener;
-    private Executor executor;
 
-    public DownloadInterceptor(Executor executor, DownloadListener listener) {
+    public DownloadInterceptor(DownloadListener listener) {
         this.listener = listener;
-        this.executor = executor;
     }
 
     @Override
@@ -21,7 +18,7 @@ public class DownloadInterceptor implements Interceptor {
         Response originalResponse = chain.proceed(chain.request());
 
         return originalResponse.newBuilder()
-                .body(new DownloadResponseBody(originalResponse.body(), executor, listener))
+                .body(new DownloadResponseBody(originalResponse.body(), listener))
                 .build();
     }
 }

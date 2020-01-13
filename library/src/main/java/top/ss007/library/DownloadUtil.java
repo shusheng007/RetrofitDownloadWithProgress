@@ -1,12 +1,9 @@
-package ss007.top.downloadwithretrofit.download;
+package top.ss007.library;
 
 
-import android.os.Handler;
-import android.os.Looper;
+import android.util.Log;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -18,17 +15,13 @@ import retrofit2.Retrofit;
 
 
 public class DownloadUtil {
-    private static final String TAG = DownloadUtil.class.getSimpleName();
+    private static final String TAG = "DownloadUtil";
     private static final int DEFAULT_TIMEOUT = 15;
-
+    private final ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
+    private final MainThreadExecutor uiExecutor = new MainThreadExecutor();
     private OkHttpClient.Builder mBuilder;
-    private ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
 
     private DownloadUtil() {
-    }
-
-    private static class SingletonHolder {
-        private static final DownloadUtil INSTANCE = new DownloadUtil();
     }
 
     public static DownloadUtil getInstance() {
@@ -41,14 +34,12 @@ public class DownloadUtil {
 
     /**
      * download file and show the progress
-     * @param baseUrl
-     * @param rUrl    related url
-     * @param filePath the path of downloaded file
+     *
      * @param listener
      */
-    public void downloadFile(final String baseUrl, final String rUrl, final String filePath, final DownloadListener listener) {
-        final Executor executor = new MainThreadExecutor();
-        DownloadInterceptor interceptor = new DownloadInterceptor(executor, listener);
+    public void downloadFile(InputParameter inputParam, final DownloadListener listener) {
+
+        DownloadInterceptor interceptor = new DownloadInterceptor(listener);
         if (mBuilder != null) {
             mBuilder.addInterceptor(interceptor);
         } else {
@@ -58,38 +49,36 @@ public class DownloadUtil {
                     .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
         }
         final DownloadService api = new Retrofit.Builder()
-                .baseUrl(baseUrl)
+                .baseUrl(inputParam.getBaseUrl())
                 .client(mBuilder.build())
                 .build()
                 .create(DownloadService.class);
-
         mExecutorService.execute(() -> {
             try {
-                Response<ResponseBody> result = api.downloadWithDynamicUrl(rUrl).execute();
-                File file = FileUtil.writeFile(filePath, result.body().byteStream());
+                Response<ResponseBody> result = api.downloadWithDynamicUrl(inputParam.getRelativeUrl()).execute();
+                File file = FileUtil.writeFile(inputParam.getLoadedFilePath(), result.body().byteStream());
                 if (listener != null) {
-                    executor.execute(() -> {
+                    if (inputParam.isCallbackOnUiThread()) {
+                        uiExecutor.execute(() -> listener.onFinish(file));
+                    } else {
                         listener.onFinish(file);
-                    });
+                    }
                 }
-
-            } catch (IOException e) {
+            } catch (Exception e) {
                 if (listener != null) {
-                    executor.execute(() -> {
+                    if (inputParam.isCallbackOnUiThread()) {
+                        uiExecutor.execute(() -> listener.onFailed(e.getMessage()));
+                    } else {
                         listener.onFailed(e.getMessage());
-                    });
+                    }
                 }
-                e.printStackTrace();
+                Log.e(TAG, e.getMessage(), e);
             }
         });
     }
 
-    private class MainThreadExecutor implements Executor {
-        private final Handler handler = new Handler(Looper.getMainLooper());
-
-        @Override
-        public void execute(Runnable r) {
-            handler.post(r);
-        }
+    private static class SingletonHolder {
+        private static final DownloadUtil INSTANCE = new DownloadUtil();
     }
+
 }

@@ -1,4 +1,4 @@
-package ss007.top.downloadwithretrofit.download;
+package top.ss007.library;
 
 import android.util.Log;
 
@@ -19,12 +19,12 @@ public class DownloadResponseBody extends ResponseBody {
     private ResponseBody responseBody;
     private DownloadListener downloadListener;
     private BufferedSource bufferedSource;
-    private Executor executor;
+    private Executor uiExecutor;
 
-    public DownloadResponseBody(ResponseBody responseBody, Executor executor, DownloadListener downloadListener) {
+    public DownloadResponseBody(ResponseBody responseBody, DownloadListener downloadListener) {
         this.responseBody = responseBody;
         this.downloadListener = downloadListener;
-        this.executor = executor;
+        uiExecutor = new MainThreadExecutor();
     }
 
     @Override
@@ -48,25 +48,21 @@ public class DownloadResponseBody extends ResponseBody {
     private Source source(Source source) {
         return new ForwardingSource(source) {
             long totalBytesRead = 0L;
-
             @Override
             public long read(Buffer sink, long byteCount) throws IOException {
                 final long bytesRead = super.read(sink, byteCount);
                 // read() returns the number of bytes read, or -1 if this source is exhausted.
                 if (null != downloadListener) {
                     totalBytesRead += bytesRead != -1 ? bytesRead : 0;
-                    Log.d("DownloadUtil","已经下载的：" + totalBytesRead + "共有：" + responseBody.contentLength());
+                    Log.d("DownloadUtil", "已经下载：" + totalBytesRead + " 总长：" + responseBody.contentLength());
                     final int progress = (int) (totalBytesRead * 100 / responseBody.contentLength());
-                    if (executor != null) {
-                        executor.execute(() -> downloadListener.onProgress(progress));
-                    } else {
-                        downloadListener.onProgress(progress);
+                    if (uiExecutor == null) {
+                        uiExecutor = new MainThreadExecutor();
                     }
+                    uiExecutor.execute(() -> downloadListener.onProgress(progress,totalBytesRead/1024,responseBody.contentLength()/1024));
                 }
                 return bytesRead;
             }
         };
     }
-
-
 }
